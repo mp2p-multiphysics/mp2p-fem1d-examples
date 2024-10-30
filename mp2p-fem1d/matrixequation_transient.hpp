@@ -4,7 +4,7 @@
 #include <vector>
 #include "Eigen/Eigen"
 #include "physicstransient_base.hpp"
-#include "variable_fieldgroup.hpp"
+#include "variable_field.hpp"
 
 class MatrixEquationTransient
 {
@@ -38,7 +38,7 @@ class MatrixEquationTransient
 
     // vector of physics
     std::vector<PhysicsTransientBase*> physics_ptr_vec;
-    std::vector<VariableFieldGroup*> variable_field_ptr_vec;
+    std::vector<VariableField*> variable_field_ptr_vec;
 
     // matrix equation variables
     Eigen::SparseMatrix<double> a_mat;
@@ -108,7 +108,7 @@ class MatrixEquationTransient
         // get vector of variable fields
         
         // initialize set of variable fields
-        std::set<VariableFieldGroup*> variable_field_ptr_set;
+        std::set<VariableField*> variable_field_ptr_set;
 
         // iterate through each physics
         for (auto physics_ptr : physics_ptr_vec)
@@ -126,7 +126,7 @@ class MatrixEquationTransient
         }
 
         // convert to vector
-        variable_field_ptr_vec = std::vector<VariableFieldGroup*>(variable_field_ptr_set.begin(), variable_field_ptr_set.end());
+        variable_field_ptr_vec = std::vector<VariableField*>(variable_field_ptr_set.begin(), variable_field_ptr_set.end());
 
         // initialize matrix equation variables
         a_mat = Eigen::SparseMatrix<double> (num_equation, num_equation);
@@ -145,16 +145,16 @@ class MatrixEquationTransient
             int start_row = variable_field_ptr->start_col;
 
             // iterate through each variable
-            for (auto variable_ptr : variable_field_ptr->variable_ptr_vec)
+            for (auto variable_ptr : variable_field_ptr->variable_l2_ptr_vec)
             {
 
                 // iterate through each global ID
-                for (auto point_gid : variable_ptr->mesh_l2_ptr->point_gid_vec)
+                for (auto point_gid : variable_ptr->mesh_ptr->point_gid_vec)
                 {
 
                     // get domain and field IDs
                     int point_fid = variable_field_ptr->point_gid_to_fid_map[point_gid];
-                    int point_did = variable_ptr->mesh_l2_ptr->point_gid_to_did_map[point_gid];
+                    int point_did = variable_ptr->mesh_ptr->point_gid_to_did_map[point_gid];
 
                     // get value from variable
                     double value = variable_ptr->point_value_vec[point_did];
@@ -255,16 +255,16 @@ void MatrixEquationTransient::store_solution()
         int start_row = variable_field_ptr->start_col;
 
         // iterate through each variable
-        for (auto variable_ptr : variable_field_ptr->variable_ptr_vec)
+        for (auto variable_ptr : variable_field_ptr->variable_l2_ptr_vec)
         {
 
             // iterate through each global ID
-            for (auto point_gid : variable_ptr->mesh_l2_ptr->point_gid_vec)
+            for (auto point_gid : variable_ptr->mesh_ptr->point_gid_vec)
             {
 
                 // get domain and field IDs
                 int point_fid = variable_field_ptr->point_gid_to_fid_map[point_gid];
-                int point_did = variable_ptr->mesh_l2_ptr->point_gid_to_did_map[point_gid];
+                int point_did = variable_ptr->mesh_ptr->point_gid_to_did_map[point_gid];
 
                 // get value from x_vec
                 int vec_row = start_row + point_fid;
